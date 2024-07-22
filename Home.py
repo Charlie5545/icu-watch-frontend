@@ -22,7 +22,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = "https://api-fcf7rbbebq-ew.a.run.app/"
 predict_url = f"{API_URL}/predict"
 
 st.title("🏥 ICU Watch - Sepsis Prediction")

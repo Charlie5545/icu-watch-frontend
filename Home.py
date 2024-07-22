@@ -40,7 +40,7 @@ if uploaded_file is not None:
         st.success("File successfully uploaded!")
 
         st.subheader("Preview of uploaded data:")
-        st.dataframe(df.head())
+        st.dataframe(df.head(6))
 
         if st.button("🔮 Get Prediction"):
             with st.spinner('Processing your data...'):

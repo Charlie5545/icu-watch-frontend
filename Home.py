@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import requests
+import plotly.graph_objects as go
 
 st.set_page_config(page_title="ICU Watch - Sepsis Prediction", layout="wide")
 
@@ -40,7 +41,7 @@ if uploaded_file is not None:
         st.success("File successfully uploaded!")
 
         st.subheader("Preview of uploaded data:")
-        st.dataframe(df.head(6))
+        st.dataframe(df)
 
         if st.button("🔮 Get Prediction"):
             with st.spinner('Processing your data...'):
@@ -50,29 +51,38 @@ if uploaded_file is not None:
                     response = requests.post(predict_url, files=files)
                     response.raise_for_status()
 
-                    predictions = response.json().get('predictions')
-                    st.success("🎉 Prediction successful!")
+                    prediction = response.json().get('predictions')
 
-                    st.subheader("Predictions:")
-                    st.write(predictions)
+                    if prediction is None:
+                        st.error("No prediction found in the API response.")
+                    else:
+                        st.success("🎉 Prediction successful!")
 
-                    df['Prediction'] = predictions
-                    st.subheader("Visualization of Predictions")
-                    st.line_chart(df['Prediction'])
+                        st.subheader("Prediction:")
+                        # Assuming prediction is a list with one float value
+                        prediction_value = prediction[0] if isinstance(prediction, list) else prediction
+                        st.write(f"The prediction for this patient is: {prediction_value:.4f}")
 
-                    csv = df.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        label="Download Predictions as CSV",
-                        data=csv,
-                        file_name="sepsis_predictions.csv",
-                        mime="text/csv",
-                    )
+                        # Create a new column with the prediction value
+                        df['Prediction'] = prediction_value
+
+                        st.subheader("Data with Prediction")
+                        st.dataframe(df)
+
+                        csv = df.to_csv(index=False).encode('utf-8')
+                        st.download_button(
+                            label="Download Data with Prediction as CSV",
+                            data=csv,
+                            file_name="patient_data_with_prediction.csv",
+                            mime="text/csv",
+                        )
                 except requests.RequestException as e:
                     st.error(f"Error communicating with the server: {str(e)}")
+                    st.write("Response content:", response.text)
     except Exception as e:
         st.error(f"Error processing the file: {str(e)}")
 else:
-    st.info("👆 Please upload a CSV file to get predictions.")
+    st.info("👆 Please upload a CSV file to get a prediction.")
 
 st.markdown("---")
 st.markdown("© 2024 ICU Watch. All rights reserved.")
